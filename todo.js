@@ -1,5 +1,9 @@
-module.export = class Todo {
-    constructor(title='') {
-        this.title = title
+//fixes first bug
+"use strict";
+//module.exports, not module.export
+module.exports = class Todo {
+	//constructor method needs
+    constructor(title) {
+        this.title = title;
     }
 }
