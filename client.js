@@ -6,9 +6,8 @@ const list = document.getElementById('todo-list');
 
 // This retrieves local storage, if there is any
 function getTodos() {
-    var todos = []
-    var todos_str = localStorage.getItem('todo');
-    console.log(todos_str, "this is the todos_str")
+    let todos = [];
+    let todos_str = localStorage.getItem('todo');
     if (todos_str != null) {
         todos = JSON.parse(todos_str); 
     }
@@ -25,7 +24,7 @@ function add() {
         title : input.value
     });
 
-    // Retrieves local storage, if there is any
+    // Retrieves local storage array
     let todos = getTodos()
     console.log("Todos in get todos", todos)
     todos.push({title: input.value})
@@ -39,10 +38,24 @@ function add() {
     input.focus();
 }
 
+function deleteTodo() {
+    console.warn(event);
+    let id = this.getAttribute('id');
+    let todos = get_todos();
+    todos.splice(id, 1);
+    localStorage.setItem('todo', JSON.stringify(todos));
+
+    render();
+}
+
 function deleteAll(listItem) {
     console.warn(event);
     //this removes the entire ul
     list.innerHTML = ""
+    // Emit the new todo as some data to the server
+    server.emit('deleteAll', {
+        title : input.value
+    });
 }
 
 function completeAll() {
@@ -55,23 +68,20 @@ function completeAll() {
 }
 
 function render(todo) {
-    let todos = getTodos()
-    console.log("here is the todo", todo);
-    console.log("and here are the todos", todos)
-    // for (i in lsTodos) {
-    //   console.log("here is the index of lstodos", lsTodos[i])
-    // }
 
-    const listItem = document.createElement('li');
-    const listItemText = document.createTextNode(todo.title);
-    listItem.appendChild(listItemText);
-    list.append(listItem);
+  //render initial DB
+  const listItem = document.createElement('li');
+  const listItemText = document.createTextNode(todo.title);
+  listItem.appendChild(listItemText);
+  list.append(listItem);
 
-    const checkedButton = document.createElement('input');
-    checkedButton.setAttribute('type', 'checkbox');
-    checkedButton.setAttribute('class', 'checkbox')
-    list.append(checkedButton);
-    localStorage.setItem('todo-list', list)
+  //add check button
+  const checkedButton = document.createElement('input');
+  checkedButton.setAttribute('type', 'checkbox');
+  checkedButton.setAttribute('class', 'checkbox')
+  list.append(checkedButton);
+
+  localStorage.setItem('todo-list', list)
 
 }
 
@@ -79,6 +89,8 @@ function render(todo) {
 // This event is for (re)loading the entire list of todos from the server
 server.on('load', (todos) => {
     todos.forEach((todo) => render(todo));
+    let localStorageToDos = getTodos()
+    localStorageToDos.forEach((todo) => render(todo))
 });
 
 server.on('reload', (newtodo) => {
